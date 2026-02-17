@@ -12,46 +12,39 @@ app.use(cors());
 
 const saltRounds = 10;
 
-// ========================
-// Multer configuration for image uploads
-// ========================
+/* ========================
+   Multer config
+======================== */
+
 if (!fs.existsSync("uploads")) fs.mkdirSync("uploads");
 
 const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
+  destination: (req, file, cb) => cb(null, "uploads/"),
+  filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + path.extname(file.originalname);
     cb(null, file.fieldname + "-" + uniqueSuffix);
   },
 });
 
 const upload = multer({ storage });
-
-// Serve uploaded images statically
 app.use("/uploads", express.static("uploads"));
 
-// ========================
-// MySQL connection
-// ========================
+/* ========================
+   MySQL connection
+======================== */
+
 const connection = mysql.createConnection({
   host: "127.0.0.1",
-  port: 8889, // MAMP default
+  port: 8889,
   user: "root",
   password: "root",
   multipleStatements: true,
 });
 
 connection.connect((err) => {
-  if (err) {
-    console.error("MySQL connection failed:", err);
-    return;
-  }
-
+  if (err) return console.error("MySQL connection failed:", err);
   console.log("Connected to MySQL");
 
-  // Create database and tables if not exists
   const setupSQL = `
     CREATE DATABASE IF NOT EXISTS ethiolodge;
     USE ethiolodge;
@@ -71,7 +64,9 @@ connection.connect((err) => {
       image VARCHAR(255),
       price DECIMAL(10,2) NOT NULL,
       number_of_room INT NOT NULL,
-      description TEXT
+      description TEXT,
+      user_id INT NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
 
     CREATE TABLE IF NOT EXISTS bookings (
@@ -86,17 +81,15 @@ connection.connect((err) => {
   `;
 
   connection.query(setupSQL, (err) => {
-    if (err) {
-      console.error("Setup error:", err);
-      return;
-    }
+    if (err) return console.error("Setup error:", err);
     console.log("Database & tables ready");
   });
 });
 
-// ========================
-// SIGNUP
-// ========================
+/* ========================
+   SIGNUP
+======================== */
+
 app.post("/signup", async (req, res) => {
   const { firstname, lastname, email, password, role } = req.body;
   const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -109,14 +102,16 @@ app.post("/signup", async (req, res) => {
     [firstname, lastname, email, hashedPassword, role],
     (err) => {
       if (err) return res.status(400).json({ message: "User already exists" });
+
       res.json({ message: "Signup successful" });
     },
   );
 });
 
-// ========================
-// LOGIN
-// ========================
+/* ========================
+   LOGIN
+======================== */
+
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
@@ -130,7 +125,6 @@ app.post("/login", (req, res) => {
 
       const user = result[0];
       const match = await bcrypt.compare(password, user.password);
-
       if (!match) return res.status(401).json({ message: "Wrong password" });
 
       res.json({
@@ -142,73 +136,118 @@ app.post("/login", (req, res) => {
   );
 });
 
-// ========================
-// GET ALL PROPERTIES
-// ========================
+/* ========================
+   GET PROPERTIES
+======================== */
+
 app.get("/properties", (req, res) => {
-  connection.query(
-    "SELECT * FROM ethiolodge.properties ORDER BY id DESC",
-    (err, results) => {
-      if (err) return res.status(500).json(err);
-      res.json(results);
-    },
-  );
+  const sql = `
+    SELECT p.*, 
+      (SELECT COUNT(*) FROM bookings b WHERE b.property_id = p.id) AS booked
+    FROM properties p
+    ORDER BY p.id DESC
+  `;
+
+  connection.query(sql, (err, results) => {
+    if (err) return res.status(500).json(err);
+    res.json(results);
+  });
 });
 
-// ========================
-// UPLOAD PROPERTY (admin only) with image
-// ========================
-app.post("/properties", upload.single("image"), (req, res) => {
-  const { location, price, number_of_room, description, userRole } = req.body;
+/* ========================
+   UPLOAD PROPERTY
+======================== */
 
-  if (userRole !== "admin") {
-    return res
-      .status(403)
-      .json({ message: "Only admins can upload properties" });
-  }
+app.post("/properties", upload.single("image"), (req, res) => {
+  const { location, price, number_of_room, description, user_id } = req.body;
 
   const image = req.file ? req.file.filename : "";
 
   const sql = `
-    INSERT INTO ethiolodge.properties
-    (location, image, price, number_of_room, description)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO properties 
+    (location, image, price, number_of_room, description, user_id)
+    VALUES (?, ?, ?, ?, ?, ?)
   `;
 
   connection.query(
     sql,
-    [location, image, price, number_of_room, description],
+    [location, image, price, number_of_room, description, user_id],
     (err) => {
       if (err)
         return res
           .status(500)
           .json({ message: "Error uploading property", error: err });
+
       res.json({ message: "Property uploaded successfully" });
     },
   );
 });
 
-// ========================
-// CREATE BOOKING
-// ========================
+/* ========================
+   CREATE BOOKING
+======================== */
+
 app.post("/bookings", (req, res) => {
   const { user_id, property_id, startfrom, ends } = req.body;
 
-  const sql = `
-    INSERT INTO ethiolodge.bookings
-    (user_id, property_id, startfrom, ends)
-    VALUES (?, ?, ?, ?)
-  `;
+  const checkSql = `SELECT * FROM bookings WHERE property_id = ?`;
 
-  connection.query(sql, [user_id, property_id, startfrom, ends], (err) => {
+  connection.query(checkSql, [property_id], (err, result) => {
     if (err) return res.status(500).json(err);
-    res.json({ message: "Booking created successfully" });
+
+    if (result.length > 0)
+      return res.status(400).json({ message: "Property already booked" });
+
+    const sql = `
+      INSERT INTO bookings 
+      (user_id, property_id, startfrom, ends)
+      VALUES (?, ?, ?, ?)
+    `;
+
+    connection.query(sql, [user_id, property_id, startfrom, ends], (err2) => {
+      if (err2) return res.status(500).json(err2);
+      res.json({ message: "Booking created successfully" });
+    });
   });
 });
 
-// ========================
-// START SERVER
-// ========================
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+/* ========================
+   GET BOOKINGS
+======================== */
+
+app.get("/bookings", (req, res) => {
+  const sql = `
+    SELECT 
+      b.id AS booking_id,
+      b.property_id,
+      u.firstname,
+      u.lastname,
+      u.email,
+      p.user_id,
+      b.startfrom,
+      b.ends
+    FROM bookings b
+    JOIN users u ON u.id = b.user_id
+    JOIN properties p ON p.id = b.property_id
+  `;
+
+  connection.query(sql, (err, results) => {
+    if (err) return res.status(500).json(err);
+    res.json(results);
+  });
 });
+
+/* ========================
+   DELETE BOOKING
+======================== */
+
+app.delete("/bookings/:booking_id", (req, res) => {
+  const { booking_id } = req.params;
+
+  connection.query("DELETE FROM bookings WHERE id = ?", [booking_id], (err) => {
+    if (err) return res.status(500).json(err);
+    res.json({ message: "Booking removed successfully" });
+  });
+});
+
+app.listen(5000, () => console.log("Server running on port 5000"));
