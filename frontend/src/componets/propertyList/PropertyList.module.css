@@ -1,0 +1,52 @@
+.listContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 30px;
+}
+
+.card {
+  background: #1f1f2f;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+.card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.card h3 {
+  margin: 10px;
+  color: #f5a623;
+}
+
+.card p {
+  margin: 0 10px 8px;
+  font-size: 0.85rem;
+  color: #ccc;
+}
+
+.bookBtn {
+  margin: 10px;
+  padding: 8px 0;
+  background-color: #e74c3c;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.bookBtn:hover {
+  background-color: #c0392b;
+}
