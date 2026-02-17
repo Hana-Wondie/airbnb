@@ -1,0 +1,27 @@
+.banner {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  padding: 30px;
+}
+
+.banner select {
+  padding: 10px;
+  border-radius: 20px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+.banner button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 20px;
+  background: #ff385c;
+  color: white;
+  transition: 0.3s;
+}
+
+.banner button:hover {
+  background: #ff1c4a;
+}

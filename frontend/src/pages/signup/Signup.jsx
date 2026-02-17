@@ -3,7 +3,7 @@ import styles from "./Signup.module.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const Signup = () => {
+const Signup = ({ setUser }) => {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -20,8 +20,32 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await axios.post("http://localhost:5000/signup", form);
-    navigate("/login");
+
+    try {
+      await axios.post("http://localhost:5000/signup", form);
+
+      // Auto login after signup
+      const loginRes = await axios.post("http://localhost:5000/login", {
+        email: form.email,
+        password: form.password,
+      });
+
+      setUser({
+        id: loginRes.data.id,
+        firstname: loginRes.data.firstname,
+        role: loginRes.data.role,
+      });
+
+      navigate("/"); // go home
+    } catch (err) {
+      if (err.response && err.response.status === 400) {
+        alert("User already exists. Please login.");
+        navigate("/login");
+      } else {
+        console.error(err);
+        alert("Signup failed. Try again.");
+      }
+    }
   };
 
   return (

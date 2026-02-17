@@ -1,98 +1,48 @@
 .container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 30px;
-  background: #f0f4f8;
-  min-height: 90vh;
-  gap: 30px;
+  justify-content: center;
+  padding: 50px;
 }
 
 .card {
-  background: white;
+  width: 450px;
+  background: rgba(255,255,255,0.08);
   padding: 30px;
-  border-radius: 15px;
-  width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.3);
 }
 
 .card h2 {
   text-align: center;
-  color: #1e3c72;
+  margin-bottom: 20px;
+  color: #ff385c;
 }
 
 .card input,
-.card select,
-.card textarea {
+.card textarea,
+.card select {
+  width: 100%;
   padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
-
-.card textarea {
-  resize: vertical;
-  min-height: 80px;
+  margin: 10px 0;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
 }
 
 .card button {
-  padding: 10px;
-  border-radius: 20px;
+  width: 100%;
+  padding: 12px;
+  border-radius: 25px;
   border: none;
-  background: #1e3c72;
+  background: linear-gradient(45deg, #ff385c, #ff6a00);
   color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
+  margin-top: 15px;
 }
 
-.card button:hover {
-  background: #2a5298;
-}
-
-.propertyList {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-  width: 100%;
-}
-
-.propertyCard {
-  background: white;
-  border-radius: 15px;
-  width: 250px;
-  padding: 15px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.propertyCard img {
-  width: 100%;
-  height: 150px;
-  border-radius: 10px;
-  object-fit: cover;
-}
-
-.propertyCard h3 {
-  margin: 0;
-  color: #1e3c72;
-}
-
-.propertyCard p {
-  margin: 0;
-  font-size: 14px;
-  color: #333;
-}
 .preview {
   width: 100%;
-  height: 150px;
-  object-fit: cover;
+  margin-top: 10px;
   border-radius: 10px;
-  margin-bottom: 10px;
 }

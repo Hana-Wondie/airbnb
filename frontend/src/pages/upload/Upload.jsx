@@ -41,13 +41,14 @@ const Upload = ({ user }) => {
       formData.append("description", form.description);
       formData.append("image", form.image);
       formData.append("userRole", user.role);
+      formData.append("user_id", user.id); // ✅ send admin ID to server
 
       await axios.post("http://localhost:5000/properties", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Redirect to home page (PropertyList)
-      navigate("/");
+      alert("Property uploaded successfully!");
+      navigate("/"); // redirect to home page
     } catch (err) {
       console.error("Upload failed:", err);
       alert("Failed to upload property. Try again.");

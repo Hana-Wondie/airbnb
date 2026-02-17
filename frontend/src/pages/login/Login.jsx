@@ -5,25 +5,34 @@ import { useNavigate } from "react-router-dom";
 
 const Login = ({ setUser }) => {
   const navigate = useNavigate();
+  const [form, setForm] = useState({ email: "", password: "" });
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
     try {
       const res = await axios.post("http://localhost:5000/login", form);
-      setUser(res.data);
-      navigate("/");
-    } catch {
-      navigate("/signup");
+
+      setUser({
+        id: res.data.id,
+        firstname: res.data.firstname,
+        role: res.data.role,
+      });
+
+      navigate("/"); // redirect to home
+    } catch (err) {
+      if (err.response && err.response.status === 404) {
+        alert("User not found. Please signup.");
+        navigate("/signup");
+      } else if (err.response && err.response.status === 401) {
+        alert("Wrong password.");
+      } else {
+        console.error(err);
+        alert("Login failed.");
+      }
     }
   };
 

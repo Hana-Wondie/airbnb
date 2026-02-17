@@ -1,0 +1,76 @@
+.footer {
+  background: linear-gradient(135deg, #0f0f0f, #1c1c1c);
+  color: #ffffff;
+  padding-top: 60px;
+  margin-top: 80px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.container {
+  max-width: 1200px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 40px;
+  padding: 0 40px 40px 40px;
+}
+
+.section h3 {
+  font-size: 22px;
+  margin-bottom: 15px;
+  background: linear-gradient(45deg, #ff385c, #ff6a00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.section h4 {
+  font-size: 16px;
+  margin-bottom: 15px;
+  color: #ff385c;
+}
+
+.section p {
+  font-size: 14px;
+  color: #cccccc;
+  line-height: 1.6;
+}
+
+/* Links */
+.section a {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #dddddd;
+  transition: 0.3s ease;
+  position: relative;
+}
+
+/* Hover effect */
+.section a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0%;
+  height: 2px;
+  background: linear-gradient(45deg, #ff385c, #ff6a00);
+  transition: 0.3s ease;
+}
+
+.section a:hover {
+  color: #ffffff;
+}
+
+.section a:hover::after {
+  width: 100%;
+}
+
+/* Bottom bar */
+.bottom {
+  text-align: center;
+  padding: 20px;
+  font-size: 13px;
+  background: #0a0a0a;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  color: #999999;
+}
